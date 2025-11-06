@@ -88,14 +88,17 @@ Il punto di ingresso dell'applicazione che orchestra l'intero processo.
 ### Risultati Finali (Policy Ottimizzata)
 Questi risultati mostrano il comportamento dell'agente con la configurazione finale, che include una penalità severa per il drift (`R_DRIFT_PENALTY = -90.0`) e controlli corretti per i bordi della mappa. L'agente dimostra una guida pulita e sicura.
 
-**Simulazione da (10, 10, 0°)**
-<img src="img/results_without_drift/Simulazione_da_10_10_0.png" width="45%"> <img src="img/results_without_drift/Animazione_da_10_10_0.gif" width="45%">
+| Simulazione da (10, 10, 0°) - Statico | Simulazione da (10, 10, 0°) - Animazione |
+| :---: | :---: |
+| <img src="img/results_without_drift/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_10_10_0.gif" width="100%"> |
 
-**Simulazione da (50, 50, 90°)**
-<img src="img/results_without_drift/Simulazione_da_50_50_18.png" width="45%"> <img src="img/results_without_drift/Animazione_da_50_50_18.gif" width="45%">
+| Simulazione da (50, 50, 90°) - Statico | Simulazione da (50, 50, 90°) - Animazione |
+| :---: | :---: |
+| <img src="img/results_without_drift/Simulazione_da_50_50_18.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_50_50_18.gif" width="100%"> |
 
-**Simulazione da (70, 72, 0°)**
-<img src="img/results_without_drift/Simulazione_da_70_72_0.png" width="45%"> <img src="img/results_without_drift/Animazione_da_70_72_0.gif" width="45%">
+| Simulazione da (70, 72, 0°) - Statico | Simulazione da (70, 72, 0°) - Animazione |
+| :---: | :---: |
+| <img src="img/results_without_drift/Simulazione_da_70_72_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_70_72_0.gif" width="100%"> |
 
 ---
 
@@ -113,5 +116,6 @@ A causa della discretizzazione della griglia, l'agente poteva muoversi in una di
 ### Comportamento Prima delle Correzioni
 Questo esempio mostra il comportamento dell'agente *prima* delle correzioni sopra descritte. Si noti come il robot tenda a "scivolare" lateralmente nelle curve strette per evitare rotazioni complesse e come in alcuni casi possa parzialmente uscire dai bordi superiori della mappa.
 
-**Simulazione con Problemi (Drift & Bordi)**
-<img src="img/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="45%"> <img src="img/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0.gif" width="45%">
+| Simulazione con Problemi - Statico | Simulazione con Problemi - Animazione |
+| :---: | :---: |
+| <img src="img/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0(1).gif" width="100%"> |
