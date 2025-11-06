@@ -1,121 +1,121 @@
 # Autonomous Agent Navigation using Value Iteration
 
-Questo progetto implementa un agente autonomo in grado di navigare in un ambiente 2D a griglia con ostacoli, utilizzando un approccio tabulare basato su **Value Iteration**. L'agente controlla un robot non puntiforme (con ingombro fisico e orientamento) e apprende una policy ottimale per raggiungere una posizione e un orientamento target `(x, y, theta)`, evitando collisioni e rispettando i vincoli di movimento.
+This project implements an autonomous agent capable of navigating a 2D grid environment with obstacles, using a tabular approach based on **Value Iteration**. The agent controls a non-point robot (with physical footprint and orientation) and learns an optimal policy to reach a target position and orientation `(x, y, theta)`, avoiding collisions and respecting movement constraints.
 
-## Caratteristiche Principali
+## Key Features
 
-* **Ambiente a Griglia:** Mondo discreto `NX x NY` con ostacoli poligonali.
-* **Stato Agente:** Lo stato dell'agente è definito da `(x, y, theta_idx)`, dove `theta_idx` rappresenta l'orientamento discreto (72 angoli possibili).
-* **Azioni Agente:** L'agente ha tre azioni discrete: `TURN_LEFT`, `TURN_RIGHT`, `MOVE_FORWARD`.
-* **Collision Detection:** Utilizza la libreria `Shapely` per calcolare l'intersezione esatta tra il footprint ruotato del robot e gli ostacoli, includendo anche i bordi della mappa come barriere invalicabili.
-* **Reward Shaping Avanzato:** Utilizza un sistema di ricompense e penalità per guidare l'apprendimento:
-    * `R_GOAL`: Ricompensa positiva per il raggiungimento del target.
-    * `R_COLLISION`: Penalità severa per le collisioni con ostacoli o bordi.
-    * `R_STEP`: Costo per ogni passo per incentivare percorsi brevi.
-    * `R_ROTATE`: Costo per le rotazioni per evitare movimenti inutili.
-    * `R_DRIFT_PENALTY`: Penalità specifica per scoraggiare movimenti fisicamente irrealistici ("drift") causati dalla discretizzazione della griglia, forzando manovre di guida pulite.
+* **Grid Environment:** Discrete `NX x NY` world with polygonal obstacles.
+* **Agent State:** The agent's state is defined by `(x, y, theta_idx)`, where `theta_idx` represents the discrete orientation (72 possible angles).
+* **Agent Actions:** The agent has three discrete actions: `TURN_LEFT`, `TURN_RIGHT`, `MOVE_FORWARD`.
+* **Collision Detection:** Uses the `Shapely` library to calculate the exact intersection between the robot's rotated footprint and obstacles, including map boundaries as impassable barriers.
+* **Advanced Reward Shaping:** Uses a system of rewards and penalties to guide learning:
+    * `R_GOAL`: Positive reward for reaching the target.
+    * `R_COLLISION`: Severe penalty for collisions with obstacles or boundaries.
+    * `R_STEP`: Cost for each step to incentivize short paths.
+    * `R_ROTATE`: Cost for rotations to avoid unnecessary movements.
+    * `R_DRIFT_PENALTY`: Specific penalty to discourage physically unrealistic movements ("drift") caused by grid discretization, forcing clean driving maneuvers.
 
-## Struttura del Progetto
+## Project Structure
 
     autonomous_agent_pjwk/
     ├── src/
     │   ├── __init__.py
-    │   ├── config.py        # Parametri di configurazione (mappa, robot, reward)
-    │   ├── environment.py   # Logica del mondo, fisica e collisioni
-    │   ├── planning.py      # Algoritmo di Value Iteration
-    │   └── visualizer.py    # Funzioni per generare plot e animazioni
-    ├── main.py              # Script principale per training e simulazione
-    ├── README.md            # Documentazione del progetto
-    └── requirements.txt     # Dipendenze Python
+    │   ├── config.py        # Configuration parameters (map, robot, rewards)
+    │   ├── environment.py   # World logic, physics, and collisions
+    │   ├── planning.py      # Value Iteration algorithm
+    │   └── visualizer.py    # Functions for generating plots and animations
+    ├── main.py              # Main script for training and simulation
+    ├── README.md            # Project documentation (English Version)
+    ├── README.it.md         # Project documentation (Italian Version)
+    └── requirements.txt     # Python dependencies
 
-## Dettagli Implementativi
+## Implementation Details
 
-### 1. Ambiente e Fisica (`src/environment.py`)
-Il cuore della simulazione è la classe `Environment`, che gestisce la fisica del mondo discreto.
-* **Stato:** Ogni stato è una tupla `(x, y, theta_idx)`.
-* **Transizioni:** La funzione `step(state, action)` calcola il prossimo stato applicando la cinematica del robot. I movimenti continui vengono discretizzati ("snapped") alla cella più vicina della griglia.
-* **Collisioni:** La funzione `is_collision(state)` utilizza `Shapely` per creare un poligono ruotato che rappresenta l'ingombro esatto del robot e verifica l'intersezione con gli ostacoli o l'uscita dai bordi della mappa.
+### 1. Environment and Physics (`src/environment.py`)
+The core of the simulation is the `Environment` class, which handles discrete world physics.
+* **State:** Each state is a tuple `(x, y, theta_idx)`.
+* **Transitions:** The `step(state, action)` function calculates the next state by applying the robot's kinematics. Continuous movements are discretized ("snapped") to the nearest grid cell.
+* **Collisions:** The `is_collision(state)` function uses `Shapely` to create a rotated polygon representing the robot's exact footprint and checks for intersection with obstacles or exiting map boundaries.
 
-### 2. Pianificazione con Value Iteration (`src/planning.py`)
-Il `ValueIterationPlanner` risolve il problema di navigazione calcolando la Value Function $V(s)$ per ogni stato.
-* **Pre-calcolo:** Per efficienza, una `collision_map` booleana viene pre-calcolata per tutti i 720.000 stati possibili, velocizzando drasticamente l'addestramento.
-* **Equazione di Bellman:** L'algoritmo itera attraverso tutti gli stati applicando l'aggiornamento:
+### 2. Planning with Value Iteration (`src/planning.py`)
+The `ValueIterationPlanner` solves the navigation problem by calculating the Value Function $V(s)$ for each state.
+* **Pre-computation:** For efficiency, a boolean `collision_map` is pre-computed for all 720,000 possible states, drastically speeding up training.
+* **Bellman Equation:** The algorithm iterates through all states applying the update:
     $$V_{k+1}(s) = \max_a [ R(s,a,s') + \gamma V_k(s') ]$$
-    fino a convergenza.
-* **Drift Penalty:** Durante il calcolo delle ricompense $R(s,a,s')$, viene calcolato il prodotto scalare tra il vettore di movimento intenzionale (basato sull'angolo) e il vettore di movimento reale (basato sulla griglia). Una penalità viene applicata se questi vettori divergono, scoraggiando i movimenti "sporchi".
+    until convergence.
+* **Drift Penalty:** During reward calculation $R(s,a,s')$, the dot product between the intended movement vector (based on angle) and the actual movement vector (based on grid) is calculated. A penalty is applied if these vectors diverge, discouraging "dirty" movements.
 
-### 3. Visualizzazione (`src/visualizer.py`)
-Utilizza `Matplotlib` per creare rappresentazioni grafiche delle policy.
-* **Plot Statici:** Disegna il percorso completo, gli ostacoli e il goal su una griglia 2D.
-* **Animazioni:** Genera GIF animate che mostrano il robot muoversi passo dopo passo.
+### 3. Visualization (`src/visualizer.py`)
+Uses `Matplotlib` to create graphical representations of policies.
+* **Static Plots:** Draws the full path, obstacles, and goal on a 2D grid.
+* **Animations:** Generates animated GIFs showing the robot moving step by step.
 
-## 4. Configurazione (`src/config.py`)
+## 4. Configuration (`src/config.py`)
 
-Questo file centralizza tutti i parametri modificabili.
+This file centralizes all modifiable parameters.
 
-* **Dimensioni del Mondo (`NX`, `NY`):** Definiscono la risoluzione della griglia.
-* **Parametri Robot:** `ROBOT_LENGTH` e `ROBOT_WIDTH` definiscono l'ingombro fisico, mentre `DELTA_THETA_DEG` definisce la granularità delle rotazioni possibili (es. 5°).
-* **Mappa:** `OBSTACLES_VERTICES` contiene la lista dei poligoni che formano gli ostacoli e `GOAL_STATE` definisce la posizione e l'orientamento target.
-* **Sistema di Ricompense (`R_*`):** Definisce i pesi scalari per tutti i tipi di eventi (goal, collisioni, passi, rotazioni, drift), che determinano direttamente il comportamento dell'agente.
+* **World Dimensions (`NX`, `NY`):** Define grid resolution.
+* **Robot Parameters:** `ROBOT_LENGTH` and `ROBOT_WIDTH` define physical footprint, while `DELTA_THETA_DEG` defines possible rotation granularity (e.g., 5°).
+* **Map:** `OBSTACLES_VERTICES` contains the list of polygons forming obstacles, and `GOAL_STATE` defines the target position and orientation.
+* **Reward System (`R_*`):** Defines scalar weights for all event types (goal, collisions, steps, rotations, drift), which directly determine agent behavior.
 
 ### 5. Main Script (`main.py`)
-Il punto di ingresso dell'applicazione che orchestra l'intero processo.
-* **Inizializzazione:** Crea le istanze di `Environment` e `ValueIterationPlanner`.
-* **Gestione Modello:** Controlla se esistono modelli pre-addestrati (`v.npy`, `policy.npy`). Se non li trova, avvia automaticamente il pre-calcolo e il training.
-* **Testing e Validazione:** Esegue una suite di test automatici per verificare che la policy in stati chiave (es. vicino al goal o agli ostacoli) sia logica.
-* **Simulazione:** Esegue episodi di prova partendo da diversi stati iniziali e utilizza il visualizzatore per generare i risultati grafici.
+The application entry point that orchestrates the entire process.
+* **Initialization:** Creates instances of `Environment` and `ValueIterationPlanner`.
+* **Model Management:** Checks if pre-trained models (`v.npy`, `policy.npy`) exist. If not found, it automatically starts pre-computation and training.
+* **Testing and Validation:** Runs an automated test suite to verify that the policy in key states (e.g., near goal or obstacles) is logical.
+* **Simulation:** Runs test episodes starting from different initial states and uses the visualizer to generate graphical results.
 
-## Come Eseguire
+## How to Run
 
-1.  **Installare le dipendenze:**
-    Assicurarsi di avere Python installato, quindi eseguire:
+1.  **Install dependencies:**
+    Ensure Python is installed, then run:
     ```bash
     pip install -r requirements.txt
     ```
 
-2.  **Avviare la simulazione:**
-    Eseguire lo script principale:
+2.  **Start the simulation:**
+    Run the main script:
     ```bash
     python main.py
     ```
-    * Al primo avvio, lo script eseguirà il **pre-calcolo della mappa delle collisioni** (può richiedere alcuni minuti) e l'algoritmo di **Value Iteration** (su una CPU Intel Core i3 di 7ª generazione, l'addestramento completo ha richiesto circa 4 ore).
-    * I modelli addestrati (`v.npy`, `policy.npy`) verranno salvati per esecuzioni future più rapide.
-    * Verranno eseguite diverse simulazioni di test, salvando i risultati come immagini statiche (`.png`) e animazioni (`.gif`).
+    * On the first run, the script will perform the **collision map pre-computation** (may take a few minutes) and the **Value Iteration** algorithm (on a 7th gen Intel Core i3 CPU, full training took approximately 4 hours).
+    * Trained models (`v.npy`, `policy.npy`) will be saved for faster future executions.
+    * Several test simulations will be run, saving results as static images (`.png`) and animations (`.gif`).
 
+## Results
 
-## 📊 Risultati
+### Final Results (Optimized Policy)
+These results show the agent's behavior with the final configuration, which includes a severe penalty for drift (`R_DRIFT_PENALTY = -90.0`) and correct map boundary checks. The agent demonstrates clean and safe driving.
 
-### Risultati Finali (Policy Ottimizzata)
-Questi risultati mostrano il comportamento dell'agente con la configurazione finale, che include una penalità severa per il drift (`R_DRIFT_PENALTY = -90.0`) e controlli corretti per i bordi della mappa. L'agente dimostra una guida pulita e sicura.
-
-| Simulazione da (10, 10, 0°) - Statico | Simulazione da (10, 10, 0°) - Animazione |
+| Simulation from (10, 10, 0°) - Static | Simulation from (10, 10, 0°) - Animation |
 | :---: | :---: |
 | <img src="img/results_without_drift/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_10_10_0.gif" width="100%"> |
 
-| Simulazione da (50, 50, 90°) - Statico | Simulazione da (50, 50, 90°) - Animazione |
+| Simulation from (50, 50, 90°) - Static | Simulation from (50, 50, 90°) - Animation |
 | :---: | :---: |
 | <img src="img/results_without_drift/Simulazione_da_50_50_18.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_50_50_18.gif" width="100%"> |
 
-| Simulazione da (70, 72, 0°) - Statico | Simulazione da (70, 72, 0°) - Animazione |
+| Simulation from (70, 72, 0°) - Static | Simulation from (70, 72, 0°) - Animation |
 | :---: | :---: |
 | <img src="img/results_without_drift/Simulazione_da_70_72_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_70_72_0.gif" width="100%"> |
 
 ---
 
-### Analisi dei Problemi Risolti
-Durante lo sviluppo, sono state affrontate due sfide critiche che compromettevano il realismo della simulazione.
+### Analysis of Solved Problems
+During development, two critical challenges were addressed that compromised simulation realism.
 
-#### 1. Uscita dai Bordi della Mappa
-Inizialmente, il sistema controllava solo se il *centro* del robot si trovasse all'interno della griglia. Questo permetteva al robot, avendo un ingombro fisico, di "sfondare" parzialmente i muri esterni della mappa con il suo perimetro.
-* **Soluzione:** È stato implementato un controllo geometrico rigoroso in `environment.py` che verifica se l'intero poligono del robot (footprint) è contenuto all'interno dei confini del mondo, trattando i bordi della mappa come muri invalicabili.
+#### 1. Exiting Map Boundaries
+Initially, the system only checked if the robot's *center* was within the grid. This allowed the robot, having a physical footprint, to partially "break through" outer map walls with its perimeter.
+* **Solution:** A rigorous geometric check was implemented in `environment.py` that verifies if the entire robot polygon (footprint) is contained within world boundaries, treating map edges as impassable walls.
 
-#### 2. "Drifting" e Movimenti Irrealistici
-A causa della discretizzazione della griglia, l'agente poteva muoversi in una direzione (es. Nord) pur essendo orientato leggermente diversamente (es. 85°), creando un effetto di "drift" o scivolamento laterale irrealistico.
-* **Soluzione:** È stata introdotta una **Drift Penalty** (`R_DRIFT_PENALTY`). Questa penalità calcola il prodotto scalare tra il vettore di movimento intenzionale (basato sull'angolo) e quello reale (sulla griglia). Impostando una penalità molto alta (-90.0), l'agente è stato forzato ad apprendere che solo i movimenti perfettamente allineati sono accettabili, eliminando completamente il comportamento di drift.
+#### 2. "Drifting" and Unrealistic Movements
+Due to grid discretization, the agent could move in one direction (e.g., North) while oriented slightly differently (e.g., 85°), creating an unrealistic "drift" or sideways sliding effect.
+* **Solution:** A **Drift Penalty** (`R_DRIFT_PENALTY`) was introduced. This penalty calculates the dot product between the intended movement vector (based on angle) and the actual one (on grid). By setting a very high penalty (-90.0), the agent was forced to learn that only perfectly aligned movements are acceptable, completely eliminating drift behavior.
 
-### Comportamento Prima delle Correzioni
-Questo esempio mostra il comportamento dell'agente *prima* delle correzioni sopra descritte. Si noti come il robot tenda a "scivolare" lateralmente nelle curve strette per evitare rotazioni complesse e come in alcuni casi possa parzialmente uscire dai bordi superiori della mappa.
+### Behavior Before Corrections
+This example shows agent behavior *before* the above corrections. Note how the robot tends to "slide" sideways in tight turns to avoid complex rotations and how it can partially exit top map boundaries in some cases.
 
-| Simulazione con Problemi - Statico | Simulazione con Problemi - Animazione |
+| Simulation with Issues - Static | Simulation with Issues - Animation |
 | :---: | :---: |
 | <img src="img/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0(1).gif" width="100%"> |
