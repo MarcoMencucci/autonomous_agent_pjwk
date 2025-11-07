@@ -27,6 +27,7 @@ This project implements an autonomous agent capable of navigating a 2D grid envi
     ├── main.py              # Main script for training and simulation
     ├── README.md            # Project documentation (English Version)
     ├── README.it.md         # Project documentation (Italian Version)
+    ├── results              # Images and animations of multiple experiments
     └── requirements.txt     # Python dependencies
 
 ## Implementation Details

@@ -27,7 +27,9 @@ Questo progetto implementa un agente autonomo in grado di navigare in un ambient
     ├── main.py              # Script principale per training e simulazione
     ├── README.md            # Documentazione del progetto (Versione Inglese)
     ├── README.it.md         # Documentazione del progetto (Versione Italiana)
+    ├── results              # Immagini e animazioni di più esperimenti
     └── requirements.txt     # Dipendenze Python
+    
 
 ## Dettagli Implementativi
 
