@@ -70,7 +70,7 @@ The application entry point that orchestrates the entire process.
 ## How to Run
 
 1.  **Install dependencies:**
-    Ensure Python is installed, then run:
+    Run the following instruction (Python needed):
     ```bash
     pip install -r requirements.txt
     ```
@@ -91,15 +91,15 @@ These results show the agent's behavior with the final configuration, which incl
 
 | Simulation from (10, 10, 0°) - Static | Simulation from (10, 10, 0°) - Animation |
 | :---: | :---: |
-| <img src="img/results_without_drift/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_10_10_0.gif" width="100%"> |
+| <img src="results/results_without_drift/Simulazione_da_10_10_0.png" width="100%"> | <img src="results/results_without_drift/Animazione_da_10_10_0.gif" width="100%"> |
 
 | Simulation from (50, 50, 90°) - Static | Simulation from (50, 50, 90°) - Animation |
 | :---: | :---: |
-| <img src="img/results_without_drift/Simulazione_da_50_50_18.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_50_50_18.gif" width="100%"> |
+| <img src="results/results_without_drift/Simulazione_da_50_50_18.png" width="100%"> | <img src="results/results_without_drift/Animazione_da_50_50_18.gif" width="100%"> |
 
 | Simulation from (70, 72, 0°) - Static | Simulation from (70, 72, 0°) - Animation |
 | :---: | :---: |
-| <img src="img/results_without_drift/Simulazione_da_70_72_0.png" width="100%"> | <img src="img/results_without_drift/Animazione_da_70_72_0.gif" width="100%"> |
+| <img src="results/results_without_drift/Simulazione_da_70_72_0.png" width="100%"> | <img src="results/results_without_drift/Animazione_da_70_72_0.gif" width="100%"> |
 
 ---
 
@@ -119,4 +119,4 @@ This example shows agent behavior *before* the above corrections. Note how the r
 
 | Simulation with Issues - Static | Simulation with Issues - Animation |
 | :---: | :---: |
-| <img src="img/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="100%"> | <img src="img/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0(1).gif" width="100%"> |
+| <img src="results/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="100%"> | <img src="results/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0(1).gif" width="100%"> |
