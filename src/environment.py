@@ -47,14 +47,21 @@ class Environment:
         return False
 
     def is_goal(self, state):
-        return state == self.goal_state
+        x, y, theta = state
+        gx, gy, gtheta = self.goal_state
 
-    def step(self, state, action):
+        check_x = int(np.round(x))
+        check_y = int(np.round(y))
+
+        return (check_x == gx) and (check_y == gy) and (theta == gtheta)
+
+    def step(self, state, action, continuous=False):
         if self.is_goal(state):
             return state, 0.0, True
 
         x, y, theta_idx = state
-        next_x, next_y, next_theta = x, y, theta_idx
+        next_x, next_y = float(x), float(y)
+        next_theta = theta_idx
         reward = 0.0
         terminated = False
 
@@ -66,10 +73,16 @@ class Environment:
             reward = self.config.R_ROTATE
         elif action == self.config.ACTIONS['MOVE_FORWARD']:
             theta_rad = theta_idx * self.config.DELTA_THETA_RAD
-            # go to nearest grid cell
-            next_x = int(np.round(x + self.config.STEP_SIZE * np.cos(theta_rad)))
-            next_y = int(np.round(y + self.config.STEP_SIZE * np.sin(theta_rad)))
-            reward = self.config.R_STEP
+            #compute continuous next position
+            cont_x = x + self.config.STEP_SIZE * np.cos(theta_rad)
+            cont_y = y + self.config.STEP_SIZE * np.sin(theta_rad)
+            if continuous:
+                next_x, next_y = cont_x, cont_y
+                reward = self.config.R_STEP
+            else:
+                next_x = int(round(cont_x))
+                next_y = int(round(cont_y))
+                reward = self.config.R_STEP
         else:
             raise ValueError(f"Invalid action: {action}")
 

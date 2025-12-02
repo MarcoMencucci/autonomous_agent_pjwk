@@ -4,8 +4,9 @@ from src.visualizer import plot_static_path, animate_path
 from src import config 
 import numpy as np
 
-def simulate_policy(planner, env, start_state):
-    print(f"\n Starting Simulation from {start_state} ")
+def simulate_policy(planner, env, start_state, continuous_mode=False):
+    mode_str = "CONTINUOUS" if continuous_mode else "DISCRETE"
+    print(f"\n Starting {mode_str} Simulation from {start_state} ")
 
     path = [start_state]
     current_state = start_state
@@ -13,7 +14,13 @@ def simulate_policy(planner, env, start_state):
 
     for i in range(max_steps):
         x, y, theta = current_state
-        action = planner.policy[x, y, theta]
+
+        ix = int(np.round(x))
+        iy = int(np.round(y))
+        ix = max(0, min(ix, config.NX - 1))
+        iy = max(0, min(iy, config.NY - 1))
+
+        action = planner.policy[ix, iy, theta]
 
         if action == -1:
             if env.is_goal(current_state):
@@ -22,7 +29,7 @@ def simulate_policy(planner, env, start_state):
                 print(f"RESULT: FAILURE. Policy -1 (Stall/Collision) at {current_state} in {i} steps.")
             break 
 
-        next_state, reward, terminated = env.step(current_state, action)
+        next_state, reward, terminated = env.step(current_state, action, continuous=continuous_mode)
         path.append(next_state)
         current_state = next_state
 
@@ -116,11 +123,19 @@ if __name__ == "__main__":
     ]
 
     for i, start_state in enumerate(start_states, 1):
-        # Only run if the start state has a valid policy
         if planner.policy[start_state] != -1:
-            path = simulate_policy(planner, env, start_state)
-            plot_title = f"Sim_{i}_from_{start_state}".replace(' ', '')
-            plot_static_path(env, path, title=f"Simulation {i} {start_state}")
-            animate_path(env, path, title=f"Animation {i} {start_state}")
+            
+            #SIMULAZIONE 1: DISCRETA
+            print(f"--- Running Discrete Sim {i} ---")
+            path_disc = simulate_policy(planner, env, start_state, continuous_mode=False)
+            plot_static_path(env, path_disc, title=f"Sim_{i}_Discrete_{start_state}")
+            animate_path(env, path_disc, title=f"Anim_{i}_Discrete_{start_state}")
+
+            # SIMULAZIONE 2: CONTINUA
+            print(f"--- Running Continuous Sim {i} ---")
+            path_cont = simulate_policy(planner, env, start_state, continuous_mode=True)
+            plot_static_path(env, path_cont, title=f"Sim_{i}_Continuous_{start_state}")
+            animate_path(env, path_cont, title=f"Anim_{i}_Continuous_{start_state}")
+
         else:
             print(f"\nSkipping simulation from {start_state} (Invalid starting policy -1)")

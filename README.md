@@ -7,6 +7,7 @@ This project implements an autonomous agent capable of navigating a 2D grid envi
 * **Grid Environment:** Discrete `NX x NY` world with polygonal obstacles.
 * **Agent State:** The agent's state is defined by `(x, y, theta_idx)`, where `theta_idx` represents the discrete orientation (72 possible angles).
 * **Agent Actions:** The agent has three discrete actions: `TURN_LEFT`, `TURN_RIGHT`, `MOVE_FORWARD`.
+* **Sim-to-Real Validation:** The project implements an evaluation pipeline that tests the discrete policy in a Continuous Environment, highlighting the "Sim-to-Real" gap.
 * **Collision Detection:** Uses the `Shapely` library to calculate the exact intersection between the robot's rotated footprint and obstacles, including map boundaries as impassable barriers.
 * **Advanced Reward Shaping:** Uses a system of rewards and penalties to guide learning:
     * `R_GOAL`: Positive reward for reaching the target.
@@ -37,9 +38,10 @@ The core of the simulation is the `Environment` class, which handles discrete wo
 * **State:** Each state is a tuple `(x, y, theta_idx)`.
 * **Transitions:** The `step(state, action)` function calculates the next state by applying the robot's kinematics. Continuous movements are discretized ("snapped") to the nearest grid cell.
 * **Collisions:** The `is_collision(state)` function uses `Shapely` to create a rotated polygon representing the robot's exact footprint and checks for intersection with obstacles or exiting map boundaries.
+* **Evaluation Mode (Continuous):** Movements use floating-point precision. The robot moves in continuous space, simulating real-world physics where grid snapping does not exist.
 
 ### 2. Planning with Value Iteration (`src/planning.py`)
-The `ValueIterationPlanner` solves the navigation problem by calculating the Value Function $V(s)$ for each state.
+The `ValueIterationPlanner` solves the navigation problem by discretely calculating the Value Function $V(s)$ for each state.
 * **Pre-computation:** For efficiency, a boolean `collision_map` is pre-computed for all 720,000 possible states, drastically speeding up training.
 * **Bellman Equation:** The algorithm iterates through all states applying the update:
     $$V_{k+1}(s) = \max_a [ R(s,a,s') + \gamma V_k(s') ]$$
@@ -64,8 +66,8 @@ This file centralizes all modifiable parameters.
 The application entry point that orchestrates the entire process.
 * **Initialization:** Creates instances of `Environment` and `ValueIterationPlanner`.
 * **Model Management:** Checks if pre-trained models (`v.npy`, `policy.npy`) exist. If not found, it automatically starts pre-computation and training.
-* **Testing and Validation:** Runs an automated test suite to verify that the policy in key states (e.g., near goal or obstacles) is logical.
-* **Simulation:** Runs test episodes starting from different initial states and uses the visualizer to generate graphical results.
+* **Testing and Validation:** Tests the agent in the ideal grid world where it learned.
+* **Continuous Simulation:**Tests the agent in a realistic continuous world. The script handles the translation between the continuous robot position and the discrete policy lookup (using nearest-neighbor rounding).
 
 ## How to Run
 
@@ -120,3 +122,23 @@ This example shows agent behavior *before* the above corrections. Note how the r
 | Simulation with Issues - Static | Simulation with Issues - Animation |
 | :---: | :---: |
 | <img src="results/breaking_boundries_and_low_drift_penalty/Simulazione_da_10_10_0.png" width="100%"> | <img src="results/breaking_boundries_and_low_drift_penalty/Animazione_da_10_10_0(1).gif" width="100%"> |
+
+---
+
+### Sim-to-Real Gap Analysis
+A key objective of this project is to evaluate how a policy learned in a discrete world performs in a continuous environment.
+
+* **Success Cases:** In open areas (e.g., starting from `50, 50` or `70, 72`), the agent successfully navigates in continuous mode. The "Drift Penalty" effectively taught the agent to align itself with the grid axes, minimizing trajectory errors.
+* **Edge Cases:** In tight spaces (e.g., starting from `10, 10` near obstacles), the continuous simulation may fail where the discrete one succeeds.
+    * *Cause:* Small drifts in continuous position (e.g., being at `x=29.6` instead of `29.0`) can cause the agent to look up the policy for a neighboring cell (`x=30`) which might be an obstacle. This results in a "safety stop" or perceived collision, demonstrating the challenges of deploying discrete policies in real-world scenarios.
+| Continuous Simulation from (10, 10, 0°) - Static | Continuous Simulation from (10, 10, 0°) - Animation |
+| :---: | :---: |
+| <img src="results\continous_simulations\Sim_1_Continuous_10_10_0.png" width="100%"> | <img src="results\continous_simulations\Anim_1_Continuous_10_10_0.gif" width="100%"> |
+
+| Continuous Simulation from (50, 50, 90°) - Static | Continuous Simulation from (50, 50, 90°) - Animation |
+| :---: | :---: |
+| <img src="results\continous_simulations\Sim_2_Continuous_50_50_18.png" width="100%"> | <img src="results\continous_simulations\Anim_2_Continuous_50_50_18.gif" width="100%"> |
+
+| Continuous Simulation from (70, 72, 0°) - Static | Continuous Simulation from (70, 72, 0°) - Animation |
+| :---: | :---: |
+| <img src="results\continous_simulations\Sim_3_Continuous_70_72_0.png" width="100%"> | <img src="results\continous_simulations\Anim_3_Continuous_70_72_0.gif" width="100%"> |
