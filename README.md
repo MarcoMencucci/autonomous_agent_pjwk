@@ -130,7 +130,7 @@ A key objective of this project is to evaluate how a policy learned in a discret
 
 * **Success Cases:** In open areas (e.g., starting from `50, 50` or `70, 72`), the agent successfully navigates in continuous mode. The "Drift Penalty" effectively taught the agent to align itself with the grid axes, minimizing trajectory errors.
 * **Edge Cases:** In tight spaces (e.g., starting from `10, 10` near obstacles), the continuous simulation may fail where the discrete one succeeds.
-    * *Cause:* Small drifts in continuous position (e.g., being at `x=29.6` instead of `29.0`) can cause the agent to look up the policy for a neighboring cell (`x=30`) which might be an obstacle. This results in a "safety stop" or perceived collision, demonstrating the challenges of deploying discrete policies in real-world scenarios.
+
 | Continuous Simulation from (10, 10, 0°) - Static | Continuous Simulation from (10, 10, 0°) - Animation |
 | :---: | :---: |
 | <img src="results\continous_simulations\Sim_1_Continuous_10_10_0.png" width="100%"> | <img src="results\continous_simulations\Anim_1_Continuous_10_10_0.gif" width="100%"> |
